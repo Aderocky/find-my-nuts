@@ -1,0 +1,6 @@
+{
+  "name": "Cozy Forest Explorer",
+  "description": "A top-down 2D pixel art exploration game with a cozy forest village.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}

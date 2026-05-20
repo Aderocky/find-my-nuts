@@ -1,0 +1,21 @@
+{
+  "entities": {
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Records of completed game runs.",
+      "type": "object",
+      "properties": {
+        "playerName": { "type": "string" },
+        "completionTime": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["playerName", "completionTime", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/leaderboard/{entryId}": {
+      "schema": "LeaderboardEntry",
+      "description": "Global leaderboard collection."
+    }
+  }
+}
