@@ -260,40 +260,6 @@ export default function Page() {
                     
                     setRedeemStatus({ type: 'success', text: 'Success! Unlocked Secret Wowok Nut!' });
                     audioManager.playSfx('reward');
-                }
-            } else if (code.toUpperCase() === 'WOWDEVTEST') {
-                const allPetIds = ['squirrel', 'firefly', 'owl', 'fox', 'deer', 'raven'];
-                localStorage.setItem('sawit_village_unlocked_pets', JSON.stringify(allPetIds));
-                
-                const petLevels = {
-                    squirrel: 10,
-                    firefly: 10,
-                    owl: 10,
-                    fox: 10,
-                    deer: 10,
-                    raven: 10
-                };
-                localStorage.setItem('sawit_village_pet_levels', JSON.stringify(petLevels));
-                
-                const petShards = {
-                    squirrel: 3,
-                    firefly: 3,
-                    owl: 3,
-                    fox: 3,
-                    deer: 3,
-                    raven: 3
-                };
-                localStorage.setItem('sawit_village_pet_shards', JSON.stringify(petShards));
-                localStorage.setItem('sawit_village_nut_coins', '9999');
-
-                const allNuts = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 99];
-                localStorage.setItem('sawit_village_encyclopedia', JSON.stringify(allNuts));
-                
-                setRedeemStatus({ type: 'success', text: 'Dev Test Mode Active! Reloading...' });
-                audioManager.playSfx('reward');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
             } else {
                 setRedeemStatus({ type: 'error', text: 'code salah' });
                 audioManager.playSfx('close');
