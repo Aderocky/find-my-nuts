@@ -4,10 +4,50 @@ import { GoogleGenAI } from '@google/genai';
 
 export async function classifyNutAction(base64Image: string) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables. Please check your .env.local file.');
+    let apiKey = process.env.GEMINI_API_KEY;
+
+    // Fallback: Read directly from .env.local or .env files in case they were not loaded by Next.js (e.g. standalone server)
+    const isPlaceholder = apiKey && (apiKey.includes('YOUR_GEMINI_API_KEY') || apiKey.includes('YOUR_API_KEY') || apiKey.trim() === '');
+    if (!apiKey || isPlaceholder) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const possiblePaths = [
+          path.join(process.cwd(), '.env.local'),
+          path.join(process.cwd(), '.env'),
+          path.join(process.cwd(), '..', '.env.local'),
+          path.join(process.cwd(), '..', '.env'),
+          path.join(process.cwd(), '..', '..', '.env.local'),
+        ];
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) {
+            const content = fs.readFileSync(p, 'utf8');
+            const match = content.match(/^GEMINI_API_KEY\s*=\s*["']?([^"'\r\n]+)["']?/m);
+            if (match && match[1]) {
+              const val = match[1].trim();
+              if (val && !val.includes('YOUR_GEMINI_API_KEY') && !val.includes('YOUR_API_KEY')) {
+                apiKey = val;
+                console.log(`[classifyNutAction] Loaded API key from file fallback: ${p}`);
+                break;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[classifyNutAction] Fallback env loading failed:', e);
+      }
     }
+
+    // Clean quotes if present
+    if (apiKey) {
+      apiKey = apiKey.replace(/['"]/g, '').trim();
+    }
+
+    if (!apiKey || apiKey.includes('YOUR_GEMINI_API_KEY') || apiKey.includes('YOUR_API_KEY')) {
+      throw new Error('GEMINI_API_KEY is not set or is a placeholder in env. Please configure it in .env.local.');
+    }
+
+    console.log(`[classifyNutAction] Using API key: ${apiKey.slice(0, 6)}...${apiKey.slice(-4)} (length: ${apiKey.length})`);
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -25,7 +65,7 @@ export async function classifyNutAction(base64Image: string) {
       - allergyInfo: Critical allergy warnings for this specific nut.
       - confidence: 0-100 score.
       - possibleAlternative: Any other nut it might be, or "None".
-
+ 
       Important: Return ONLY the JSON object. Do NOT use markdown code blocks or backticks.
     `;
 
@@ -77,8 +117,10 @@ export async function classifyNutAction(base64Image: string) {
       error.message?.toLowerCase().includes('exhausted')
     ) {
       userMessage = 'The AI is currently busy (quota exceeded). Please wait a few seconds and try again.';
-    } else if (error.message?.toLowerCase().includes('api key')) {
-      userMessage = 'Invalid API Key. Please check your .env.local configuration.';
+    } else if (error.message?.toLowerCase().includes('api key') || error.message?.toLowerCase().includes('key not valid')) {
+      userMessage = `Invalid API Key. Please check your .env.local configuration. (Details: ${error.message})`;
+    } else {
+      userMessage = `Error: ${error.message}`;
     }
 
     return {

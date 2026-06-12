@@ -260,6 +260,7 @@ export default function Page() {
                     
                     setRedeemStatus({ type: 'success', text: 'Success! Unlocked Secret Wowok Nut!' });
                     audioManager.playSfx('reward');
+                }
             } else {
                 setRedeemStatus({ type: 'error', text: 'code salah' });
                 audioManager.playSfx('close');
